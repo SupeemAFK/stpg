@@ -1,43 +1,26 @@
-import { useState } from 'react';
-import { GameProvider, useGame } from './context/GameContext';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { GameProvider } from './context/GameContext';
 import Layout from './components/Layout';
-import BottomNav from './components/BottomNav';
 import Scanner from './views/Scanner';
 import Pokedex from './views/Pokedex';
 import MonsterDetail from './views/MonsterDetail';
 import Lab from './views/Lab';
 import Jam from './views/Jam';
-import type { ViewType } from './types';
 
 function AppContent() {
-  const [currentView, setCurrentView] = useState<ViewType>('scanner');
-  const { selectMonster } = useGame();
-
-  const handleNavigateToDetail = (monsterId: string, view: ViewType) => {
-    selectMonster(monsterId);
-    setCurrentView(view);
-  };
-
-  const handleViewChange = (view: ViewType) => {
-    setCurrentView(view);
-  };
-
   return (
-    <>
+    <Router>
       <Layout>
-        {currentView === 'scanner' && <Scanner />}
-        {currentView === 'pokedex' && (
-          <Pokedex onNavigateToDetail={handleNavigateToDetail} />
-        )}
-        {currentView === 'detail' && (
-          <MonsterDetail onNavigate={handleViewChange} />
-        )}
-        {currentView === 'lab' && <Lab />}
-        {currentView === 'jam' && <Jam />}
+        <Routes>
+          <Route path="/" element={<Pokedex />} />
+          <Route path="/scanner" element={<Scanner />} />
+          <Route path="/monster/:id" element={<MonsterDetail />} />
+          <Route path="/lab" element={<Lab />} />
+          <Route path="/jam" element={<Jam />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </Layout>
-
-      <BottomNav currentView={currentView} onViewChange={handleViewChange} />
-    </>
+    </Router>
   );
 }
 

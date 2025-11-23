@@ -6,9 +6,11 @@ import type { Mesh } from 'three';
 interface Monster3DProps {
     color: string;
     type: string;
+    scale?: number;
+    isPlaying?: boolean;
 }
 
-export default function Monster3D({ color, type }: Monster3DProps) {
+export default function Monster3D({ color, type, scale = 1, isPlaying = false }: Monster3DProps) {
     const meshRef = useRef<Mesh>(null);
 
     useFrame((state) => {

@@ -1,266 +1,225 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGame } from '../context/GameContext';
-import Modal from '../components/Modal';
-import type { Monster } from '../types';
-import { Plus, X, Sparkles, Flame } from 'lucide-react';
+import { ArrowLeft, FlaskConical, Sparkles, Plus, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment } from '@react-three/drei';
 import MonsterMini3D from '../components/MonsterMini3D';
+import Modal from '../components/Modal';
 
 export default function Lab() {
+    const navigate = useNavigate();
     const { allMonsters, fuseMonsters } = useGame();
-    const [slotA, setSlotA] = useState<Monster | null>(null);
-    const [slotB, setSlotB] = useState<Monster | null>(null);
-    const [showSelectModal, setShowSelectModal] = useState<'A' | 'B' | null>(null);
-    const [fusionResult, setFusionResult] = useState<{ success: boolean; monster: Monster | null } | null>(null);
-    const [isAnimating, setIsAnimating] = useState(false);
+    const [slot1, setSlot1] = useState<string | null>(null);
+    const [slot2, setSlot2] = useState<string | null>(null);
+    const [result, setResult] = useState<{ success: boolean; result: any } | null>(null);
+    const [showResult, setShowResult] = useState(false);
 
     const unlockedMonsters = allMonsters.filter(m => m.isUnlocked);
+    const monster1 = slot1 ? allMonsters.find(m => m.id === slot1) : null;
+    const monster2 = slot2 ? allMonsters.find(m => m.id === slot2) : null;
 
-    const handleSelectMonster = (monster: Monster) => {
-        if (showSelectModal === 'A') {
-            setSlotA(monster);
-        } else if (showSelectModal === 'B') {
-            setSlotB(monster);
+    const handleFusion = () => {
+        if (slot1 && slot2) {
+            const fusionResult = fuseMonsters(slot1, slot2);
+            setResult(fusionResult);
+            setShowResult(true);
+
+            if (fusionResult.success) {
+                // Clear slots on success
+                setTimeout(() => {
+                    setSlot1(null);
+                    setSlot2(null);
+                }, 2000);
+            }
         }
-        setShowSelectModal(null);
     };
 
-    const handleFuse = () => {
-        if (!slotA || !slotB) return;
-
-        setIsAnimating(true);
-
-        setTimeout(() => {
-            const result = fuseMonsters(slotA.id, slotB.id);
-            setFusionResult({ success: result.success, monster: result.result });
-            setIsAnimating(false);
-        }, 2000);
-    };
-
-    const handleReset = () => {
-        setSlotA(null);
-        setSlotB(null);
-        setFusionResult(null);
-        setIsAnimating(false);
+    const handleCloseResult = () => {
+        setShowResult(false);
+        setResult(null);
     };
 
     return (
-        <div className="py-6 min-h-[calc(100vh-200px)]">
+        <div className="h-full bg-purple-50 flex flex-col p-6">
             {/* Header */}
-            <div className="glass-dark rounded-2xl p-6 mb-8 border border-white/20">
-                <h1 className="text-4xl md:text-5xl font-black text-white mb-2 animate-neon-pulse">
-                    Fusion Lab
-                </h1>
-                <p className="text-lg text-white/80 font-semibold">
-                    Combine two monsters to create something new!
-                </p>
+            <div className="flex items-center gap-4 mb-6">
+                <button
+                    onClick={() => navigate('/')}
+                    className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-600 shadow-[0_4px_0_#cbd5e1] border-b-4 border-slate-300 active:shadow-none active:translate-y-1 transition-all"
+                >
+                    <ArrowLeft size={24} strokeWidth={3} />
+                </button>
+                <div>
+                    <h1 className="text-3xl font-black text-slate-800 tracking-tight">The Lab</h1>
+                    <p className="text-slate-500 font-bold">Mix monsters to create new sounds!</p>
+                </div>
             </div>
 
-            {/* Lab Interface */}
-            <div className="max-w-4xl mx-auto">
+            {/* Fusion Chamber */}
+            <div className="flex-1 flex flex-col gap-6">
                 {/* Fusion Slots */}
-                <div className="grid md:grid-cols-3 gap-6 items-center mb-8">
-                    {/* Slot A */}
-                    <div>
-                        <label className="block text-sm font-bold text-white/80 mb-2 uppercase">
-                            Monster A
-                        </label>
-                        <button
-                            onClick={() => setShowSelectModal('A')}
-                            disabled={isAnimating}
-                            className={`
-                relative w-full aspect-square rounded-xl border-4 border-dashed
-                flex flex-col items-center justify-center gap-3
-                transition-all hover:scale-105
-                ${slotA ? 'border-red-500 glass-dark' : 'border-white/30 glass-dark hover:border-white/50'}
-                ${isAnimating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-              `}
-                        >
-                            {slotA ? (
+                <div className="flex items-center justify-center gap-4">
+                    {/* Slot 1 */}
+                    <div className="flex-1 max-w-[200px]">
+                        <div className="bg-white rounded-3xl border-4 border-purple-300 shadow-[0_8px_0_#c084fc] p-4 h-48 flex flex-col items-center justify-center">
+                            {monster1 ? (
                                 <>
-                                    <div className="w-full h-3/4">
-                                        <Canvas camera={{ position: [0, 0, 3], fov: 50 }} className="w-full h-full">
-                                            <ambientLight intensity={0.5} />
-                                            <directionalLight position={[5, 5, 5]} intensity={1} />
-                                            <MonsterMini3D color={slotA.color} type={slotA.type} scale={1.2} />
-                                            <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={2} />
-                                            <Environment preset="city" />
+                                    <div className="w-full h-24 mb-2">
+                                        <Canvas camera={{ position: [0, 0.5, 2], fov: 45 }}>
+                                            <ambientLight intensity={0.8} />
+                                            <directionalLight position={[2, 2, 2]} intensity={1} />
+                                            <MonsterMini3D
+                                                color={monster1.color}
+                                                type={monster1.type}
+                                                scale={0.6}
+                                            />
+                                            <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={2} />
                                         </Canvas>
                                     </div>
-                                    <span className="font-bold text-white">{slotA.name}</span>
-                                    <X className="absolute top-2 right-2 w-5 h-5 text-red-400 hover:text-red-600" />
+                                    <p className="font-black text-slate-800 text-sm">{monster1.name}</p>
+                                    <button
+                                        onClick={() => setSlot1(null)}
+                                        className="mt-1 text-xs text-purple-500 hover:text-purple-700"
+                                    >
+                                        Remove
+                                    </button>
                                 </>
                             ) : (
-                                <>
-                                    <Plus className="w-12 h-12 text-white/40" />
-                                    <span className="text-white/60">Select Monster</span>
-                                </>
+                                <div className="text-center">
+                                    <FlaskConical size={40} className="text-purple-300 mb-2 mx-auto" />
+                                    <p className="text-sm text-slate-400 font-bold">Select Monster</p>
+                                </div>
                             )}
-                        </button>
+                        </div>
                     </div>
 
                     {/* Plus Icon */}
                     <div className="flex items-center justify-center">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-600 to-purple-600 flex items-center justify-center glow-red">
-                            <Plus className="w-8 h-8 text-white" strokeWidth={3} />
+                        <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center shadow-lg">
+                            <Plus size={32} className="text-white" strokeWidth={3} />
                         </div>
                     </div>
 
-                    {/* Slot B */}
-                    <div>
-                        <label className="block text-sm font-bold text-white/80 mb-2 uppercase">
-                            Monster B
-                        </label>
-                        <button
-                            onClick={() => setShowSelectModal('B')}
-                            disabled={isAnimating}
-                            className={`
-                relative w-full aspect-square rounded-xl border-4 border-dashed
-                flex flex-col items-center justify-center gap-3
-                transition-all hover:scale-105
-                ${slotB ? 'border-red-500 glass-dark' : 'border-white/30 glass-dark hover:border-white/50'}
-                ${isAnimating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-              `}
-                        >
-                            {slotB ? (
+                    {/* Slot 2 */}
+                    <div className="flex-1 max-w-[200px]">
+                        <div className="bg-white rounded-3xl border-4 border-purple-300 shadow-[0_8px_0_#c084fc] p-4 h-48 flex flex-col items-center justify-center">
+                            {monster2 ? (
                                 <>
-                                    <div className="w-full h-3/4">
-                                        <Canvas camera={{ position: [0, 0, 3], fov: 50 }} className="w-full h-full">
-                                            <ambientLight intensity={0.5} />
-                                            <directionalLight position={[5, 5, 5]} intensity={1} />
-                                            <MonsterMini3D color={slotB.color} type={slotB.type} scale={1.2} />
-                                            <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={2} />
-                                            <Environment preset="city" />
+                                    <div className="w-full h-24 mb-2">
+                                        <Canvas camera={{ position: [0, 0.5, 2], fov: 45 }}>
+                                            <ambientLight intensity={0.8} />
+                                            <directionalLight position={[2, 2, 2]} intensity={1} />
+                                            <MonsterMini3D
+                                                color={monster2.color}
+                                                type={monster2.type}
+                                                scale={0.6}
+                                            />
+                                            <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={2} />
                                         </Canvas>
                                     </div>
-                                    <span className="font-bold text-white">{slotB.name}</span>
-                                    <X className="absolute top-2 right-2 w-5 h-5 text-red-400 hover:text-red-600" />
+                                    <p className="font-black text-slate-800 text-sm">{monster2.name}</p>
+                                    <button
+                                        onClick={() => setSlot2(null)}
+                                        className="mt-1 text-xs text-purple-500 hover:text-purple-700"
+                                    >
+                                        Remove
+                                    </button>
                                 </>
                             ) : (
-                                <>
-                                    <Plus className="w-12 h-12 text-white/40" />
-                                    <span className="text-white/60">Select Monster</span>
-                                </>
+                                <div className="text-center">
+                                    <FlaskConical size={40} className="text-purple-300 mb-2 mx-auto" />
+                                    <p className="text-sm text-slate-400 font-bold">Select Monster</p>
+                                </div>
                             )}
-                        </button>
+                        </div>
                     </div>
                 </div>
 
-                {/* Fusion Button */}
-                <div className="text-center mb-8">
+                {/* Fuse Button */}
+                <div className="text-center">
                     <motion.button
-                        whileHover={{ scale: slotA && slotB && !isAnimating ? 1.05 : 1 }}
-                        whileTap={{ scale: slotA && slotB && !isAnimating ? 0.95 : 1 }}
-                        onClick={handleFuse}
-                        disabled={!slotA || !slotB || isAnimating}
+                        whileHover={{ scale: slot1 && slot2 ? 1.05 : 1 }}
+                        whileTap={{ scale: slot1 && slot2 ? 0.95 : 1 }}
+                        onClick={handleFusion}
+                        disabled={!slot1 || !slot2}
                         className={`
-              px-12 py-4 rounded-xl font-black text-xl uppercase
-              flex items-center gap-3 mx-auto
-              transition-all shadow-lg
-              ${slotA && slotB && !isAnimating
-                                ? 'bg-gradient-to-r from-red-600 to-purple-600 hover:from-red-700 hover:to-purple-700 text-white cursor-pointer glow-red'
-                                : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                            px-8 py-4 rounded-2xl font-black text-xl flex items-center gap-3 mx-auto
+                            transition-all shadow-[0_6px_0_rgba(0,0,0,0.2)] border-b-4
+                            ${slot1 && slot2
+                                ? 'bg-yellow-400 hover:bg-yellow-500 text-yellow-900 border-yellow-600 cursor-pointer'
+                                : 'bg-slate-300 text-slate-500 border-slate-400 cursor-not-allowed opacity-50'
                             }
-              ${isAnimating ? 'animate-pulse-scale' : ''}
-            `}
+                        `}
                     >
-                        <Flame className="w-6 h-6" />
-                        {isAnimating ? 'Fusing...' : 'Fuse Monsters'}
+                        <Zap className="w-6 h-6" fill="currentColor" />
+                        FUSE MONSTERS!
                     </motion.button>
                 </div>
 
-                {/* Fusion Result */}
-                <AnimatePresence>
-                    {fusionResult && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className={`
-                p-8 rounded-2xl text-center border-4
-                ${fusionResult.success
-                                    ? 'bg-gradient-to-br from-green-500 to-emerald-600 border-green-400'
-                                    : 'bg-gradient-to-br from-gray-600 to-gray-700 animate-shake border-red-400'
-                                }
-              `}
-                        >
-                            {fusionResult.success && fusionResult.monster ? (
-                                <>
-                                    <Sparkles className="w-16 h-16 text-yellow-300 mx-auto mb-4 animate-spin-slow glow-yellow" />
-                                    <h2 className="text-3xl font-black text-white mb-4">
-                                        Fusion Successful!
-                                    </h2>
-                                    <div className="bg-white/20 backdrop-blur rounded-xl p-6 mb-4">
-                                        <div className="w-40 h-40 mx-auto mb-4">
-                                            <Canvas camera={{ position: [0, 0, 3], fov: 50 }} className="w-full h-full">
-                                                <ambientLight intensity={0.5} />
-                                                <directionalLight position={[5, 5, 5]} intensity={1.5} />
-                                                <MonsterMini3D color={fusionResult.monster.color} type={fusionResult.monster.type} scale={1.5} />
-                                                <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={3} />
-                                                <Environment preset="sunset" />
-                                            </Canvas>
-                                        </div>
-                                        <h3 className="text-2xl font-black text-white">
-                                            {fusionResult.monster.name}
-                                        </h3>
-                                    </div>
-                                    <button
-                                        onClick={handleReset}
-                                        className="bg-white text-green-600 font-bold py-3 px-8 rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
-                                    >
-                                        Fuse Again
-                                    </button>
-                                </>
-                            ) : (
-                                <>
-                                    <X className="w-16 h-16 text-red-300 mx-auto mb-4" />
-                                    <h2 className="text-3xl font-black text-white mb-4">
-                                        Fusion Failed
-                                    </h2>
-                                    <p className="text-white/80 mb-4 text-lg">
-                                        These monsters can't be fused together.
-                                    </p>
-                                    <button
-                                        onClick={handleReset}
-                                        className="bg-white text-gray-700 font-bold py-3 px-8 rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
-                                    >
-                                        Try Again
-                                    </button>
-                                </>
-                            )}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                {/* Monster Selection Grid */}
+                <div className="flex-1 overflow-y-auto">
+                    <h3 className="text-lg font-black text-slate-700 mb-3">Your Monsters:</h3>
+                    <div className="grid grid-cols-3 gap-3">
+                        {unlockedMonsters.map(monster => (
+                            <button
+                                key={monster.id}
+                                onClick={() => {
+                                    if (!slot1) {
+                                        setSlot1(monster.id);
+                                    } else if (!slot2 && monster.id !== slot1) {
+                                        setSlot2(monster.id);
+                                    }
+                                }}
+                                disabled={monster.id === slot1 || monster.id === slot2}
+                                className={`
+                                    bg-white rounded-xl border-3 p-3 transition-all
+                                    ${(monster.id === slot1 || monster.id === slot2)
+                                        ? 'opacity-40 cursor-not-allowed border-slate-200'
+                                        : 'hover:scale-105 border-purple-200 shadow-md cursor-pointer'
+                                    }
+                                `}
+                            >
+                                <div className="w-12 h-12 rounded-lg mx-auto mb-2 flex items-center justify-center" style={{ backgroundColor: monster.color + '20' }}>
+                                    <div className="text-2xl">{monster.type === 'bass' ? '🥁' : monster.type === 'rhythm' ? '🎵' : '🎹'}</div>
+                                </div>
+                                <p className="text-xs font-black text-slate-700 truncate">{monster.name}</p>
+                            </button>
+                        ))}
+                    </div>
+                </div>
             </div>
 
-            {/* Monster Selection Modal */}
-            <Modal open={showSelectModal !== null} onClose={() => setShowSelectModal(null)}>
-                <h2 className="text-2xl font-black text-gray-900 mb-6">
-                    Select a Monster for Slot {showSelectModal}
-                </h2>
-
-                <div className="grid grid-cols-2 gap-4 max-h-96 overflow-y-auto">
-                    {unlockedMonsters.map((monster) => (
-                        <button
-                            key={monster.id}
-                            onClick={() => handleSelectMonster(monster)}
-                            className="p-4 rounded-lg border-2 border-gray-200 hover:border-red-600 transition-all hover:bg-red-50 hover:scale-105"
-                        >
-                            <div className="w-20 h-20 mx-auto mb-2">
-                                <Canvas camera={{ position: [0, 0, 2.5], fov: 50 }} className="w-full h-full">
-                                    <ambientLight intensity={0.6} />
-                                    <directionalLight position={[3, 3, 3]} intensity={1} />
-                                    <MonsterMini3D color={monster.color} type={monster.type} scale={0.7} />
-                                    <OrbitControls enableZoom={false} enablePan={false} autoRotate />
-                                    <Environment preset="city" />
-                                </Canvas>
-                            </div>
-                            <p className="font-bold text-sm">{monster.name}</p>
-                        </button>
-                    ))}
-                </div>
+            {/* Result Modal */}
+            <Modal open={showResult} onClose={handleCloseResult}>
+                {result && (
+                    <div className="text-center py-8 relative overflow-hidden">
+                        {result.success && result.result ? (
+                            <>
+                                <motion.div
+                                    initial={{ scale: 0, rotate: -180 }}
+                                    animate={{ scale: 1, rotate: 0 }}
+                                    transition={{ type: "spring", duration: 0.8 }}
+                                    className="mb-6"
+                                >
+                                    <div className="w-32 h-32 mx-auto rounded-3xl flex items-center justify-center mb-4" style={{ backgroundColor: result.result.color + '40' }}>
+                                        <Sparkles size={64} className="text-yellow-400 fill-yellow-400" />
+                                    </div>
+                                </motion.div>
+                                <h2 className="text-3xl font-black text-slate-800 mb-2">Fusion Success!</h2>
+                                <p className="text-xl font-bold text-purple-600 mb-4">You created {result.result.name}!</p>
+                                <p className="text-slate-500">A new {result.result.type} monster has been unlocked!</p>
+                            </>
+                        ) : (
+                            <>
+                                <div className="text-6xl mb-4">❌</div>
+                                <h2 className="text-2xl font-black text-slate-800 mb-2">Fusion Failed</h2>
+                                <p className="text-slate-500">These monsters can't be combined. Try a different pair!</p>
+                            </>
+                        )}
+                    </div>
+                )}
             </Modal>
         </div>
     );

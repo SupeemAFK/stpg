@@ -18,6 +18,7 @@ export interface Monster {
     isUnlocked: boolean;
     soundSrc: string;
     stats: Stats;
+    recordedAudio?: string; // Base64 encoded audio data or Blob URL
 }
 
 export interface StageSlot {

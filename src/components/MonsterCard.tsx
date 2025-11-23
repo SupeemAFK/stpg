@@ -1,5 +1,5 @@
 import type { Monster } from '../types';
-import { Lock, Zap, Sparkles } from 'lucide-react';
+import { Lock, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment } from '@react-three/drei';
@@ -16,70 +16,56 @@ export default function MonsterCard({ monster, onClick, locked }: MonsterCardPro
 
     return (
         <motion.div
-            whileHover={!isLocked ? { scale: 1.08, rotateY: 5 } : {}}
+            whileHover={!isLocked ? { y: -5 } : {}}
             whileTap={!isLocked ? { scale: 0.95 } : {}}
             onClick={!isLocked ? onClick : undefined}
             className={`
-        relative overflow-hidden rounded-xl diagonal-cut-br transform-3d
-        ${!isLocked ? 'cursor-pointer card-shine holographic' : 'cursor-not-allowed'}
-        ${!isLocked ? 'bg-gradient-to-br from-white via-white to-gray-50' : 'bg-gray-300'}
-        border-4 transition-all duration-300
-        ${!isLocked ? 'border-gray-900 hover:border-red-600 glow-red' : 'border-gray-500'}
-        ${!isLocked ? 'shadow-2xl hover:shadow-red-500/50' : 'shadow-lg'}
-      `}
+                relative w-64 h-80 rounded-[2rem] border-4 overflow-hidden flex flex-col
+                ${!isLocked ? 'bg-white border-slate-200 shadow-[0_8px_0_#cbd5e1] cursor-pointer' : 'bg-slate-100 border-slate-300 cursor-not-allowed'}
+                transition-colors
+            `}
         >
-            {/* Type Badge */}
-            {!isLocked && (
-                <div
-                    className="absolute top-2 right-2 px-3 py-1 rounded-full text-xs font-bold uppercase text-white z-10 shadow-lg animate-bounce-in"
-                    style={{ backgroundColor: monster.color, boxShadow: `0 0 20px ${monster.color}80` }}
-                >
-                    {monster.type}
-                </div>
-            )}
+            {/* Card Header / Background Pattern */}
+            <div className={`h-2/3 relative ${!isLocked ? 'bg-blue-50' : 'bg-slate-200'} flex items-center justify-center overflow-hidden`}>
+                {/* Decorative circles */}
+                <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] opacity-10 rounded-full border-[20px] border-current text-blue-200" />
 
-            {/* Sparkles effect for unlocked cards */}
-            {!isLocked && (
-                <div className="absolute top-2 left-2 z-10">
-                    <Sparkles className="w-4 h-4 text-yellow-400 animate-spin-slow" />
-                </div>
-            )}
-
-            {/* Monster 3D Model or Locked State */}
-            <div className={`aspect-square relative flex items-center justify-center overflow-hidden ${!isLocked ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-black' : 'bg-gray-400'
-                }`}>
                 {!isLocked ? (
-                    <Canvas camera={{ position: [0, 0, 3], fov: 50 }} className="w-full h-full">
-                        <ambientLight intensity={0.5} />
-                        <directionalLight position={[5, 5, 5]} intensity={1} />
-                        <pointLight position={[-5, -5, -3]} intensity={0.3} />
-                        <MonsterMini3D color={monster.color} type={monster.type} />
-                        <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={1} />
-                        <Environment preset="city" />
-                    </Canvas>
+                    <div className="w-full h-full">
+                        <Canvas camera={{ position: [0, 0, 3.5], fov: 45 }}>
+                            <ambientLight intensity={0.8} />
+                            <directionalLight position={[5, 5, 5]} intensity={1.2} />
+                            <MonsterMini3D color={monster.color} type={monster.type} />
+                            <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={2} />
+                            <Environment preset="studio" />
+                        </Canvas>
+                    </div>
                 ) : (
-                    <div className="relative">
-                        <div className="w-32 h-32 hexagon bg-gray-500 opacity-40 animate-pulse-scale" />
-                        <Lock className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 text-gray-600" />
+                    <Lock className="w-16 h-16 text-slate-400" strokeWidth={2.5} />
+                )}
+
+                {/* Type Badge */}
+                {!isLocked && (
+                    <div
+                        className="absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-black text-white shadow-sm uppercase tracking-wider"
+                        style={{ backgroundColor: monster.color }}
+                    >
+                        {monster.type}
                     </div>
                 )}
             </div>
 
-            {/* Monster Info */}
-            <div className={`p-4 ${!isLocked ? 'bg-gradient-to-r from-white to-gray-50' : 'bg-gray-200'}`}>
-                <h3 className={`font-black text-lg mb-1 ${!isLocked ? 'text-gray-900' : 'text-gray-500'} ${!isLocked ? 'animate-slide-up' : ''}`}>
+            {/* Card Body */}
+            <div className="flex-1 p-4 flex flex-col justify-center items-center text-center bg-white relative z-10">
+                <h3 className={`font-black text-2xl ${!isLocked ? 'text-slate-800' : 'text-slate-400'}`}>
                     {!isLocked ? monster.name : '???'}
                 </h3>
 
                 {!isLocked && (
-                    <div className="flex items-center gap-1 text-sm font-bold text-gray-700">
-                        <Zap className="w-4 h-4" style={{ color: monster.color }} />
-                        <span>Sound Monster</span>
+                    <div className="flex items-center gap-1 mt-1">
+                        <Sparkles className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Sound Monster</span>
                     </div>
-                )}
-
-                {isLocked && (
-                    <p className="text-sm text-gray-500 font-semibold">Unknown Signal</p>
                 )}
             </div>
         </motion.div>

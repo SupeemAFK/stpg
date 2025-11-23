@@ -1,153 +1,134 @@
+import { useNavigate, useParams } from 'react-router-dom';
 import { useGame } from '../context/GameContext';
-import { ArrowLeft, Play, Volume2 } from 'lucide-react';
-import type { ViewType } from '../types';
-import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer } from 'recharts';
+import useSoundPlayer from '../hooks/useSoundPlayer';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment } from '@react-three/drei';
-import Monster3D from '../components/Monster3D';
-import useSoundPlayer from '../hooks/useSoundPlayer';
+import MonsterMini3D from '../components/MonsterMini3D';
+import { Volume2, Play, ArrowLeft, Zap, Heart, Shield, Activity } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-interface MonsterDetailProps {
-    onNavigate: (view: ViewType) => void;
-}
-
-export default function MonsterDetail({ onNavigate }: MonsterDetailProps) {
-    const { selectedMonster } = useGame();
+export default function MonsterDetail() {
+    const navigate = useNavigate();
+    const { id } = useParams<{ id: string }>();
+    const { allMonsters } = useGame();
     const { playMonsterSound, isPlaying } = useSoundPlayer();
 
-    if (!selectedMonster) {
-        return (
-            <div className="min-h-[calc(100vh-200px)] flex items-center justify-center">
-                <div className="glass-dark rounded-2xl p-8 text-center">
-                    <p className="text-white/80 mb-4 text-lg">No monster selected</p>
-                    <button
-                        onClick={() => onNavigate('pokedex')}
-                        className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-3 px-6 rounded-xl transition-all glow-red"
-                    >
-                        Go to Pokédex
-                    </button>
-                </div>
-            </div>
-        );
+    const monster = allMonsters.find(m => m.id === id);
+
+    if (!monster) {
+        return <div className="p-8 text-center text-2xl font-bold text-slate-500">Monster not found!</div>;
     }
 
-    const statsData = [
-        { stat: 'HP', value: selectedMonster.stats.hp, fullMark: 255 },
-        { stat: 'Attack', value: selectedMonster.stats.attack, fullMark: 255 },
-        { stat: 'Defense', value: selectedMonster.stats.defense, fullMark: 255 },
-        { stat: 'Sp. Atk', value: selectedMonster.stats.spAtk, fullMark: 255 },
-        { stat: 'Sp. Def', value: selectedMonster.stats.spDef, fullMark: 255 },
-        { stat: 'Speed', value: selectedMonster.stats.speed, fullMark: 255 },
-    ];
-
     const handlePlaySound = () => {
-        playMonsterSound(selectedMonster.type);
+        playMonsterSound(monster, {
+            pitchShift: 0,
+            speed: 1,
+            waveform: 'sine'
+        });
     };
 
-    return (
-        <div className="py-6">
-            {/* Back Button */}
-            <button
-                onClick={() => onNavigate('pokedex')}
-                className="flex items-center gap-2 text-white/80 hover:text-white mb-6 font-bold transition-colors glass-dark px-4 py-2 rounded-lg"
-            >
-                <ArrowLeft className="w-5 h-5" />
-                Back to Pokédex
-            </button>
+    const stats = [
+        { label: 'HP', value: monster.stats.hp, max: 255, color: 'bg-red-500', icon: Heart },
+        { label: 'ATK', value: monster.stats.attack, max: 255, color: 'bg-orange-500', icon: Zap },
+        { label: 'DEF', value: monster.stats.defense, max: 255, color: 'bg-blue-500', icon: Shield },
+        { label: 'SPD', value: monster.stats.speed, max: 255, color: 'bg-green-500', icon: Activity },
+    ];
 
-            {/* Monster Detail Layout */}
-            <div className="grid md:grid-cols-2 gap-8 md:gap-12">
-                {/* Left: 3D Model */}
-                <div className="flex items-center justify-center">
-                    <div className="w-full aspect-square max-w-md glass-dark rounded-2xl p-6 border border-white/20 relative overflow-hidden">
-                        {/* 3D Canvas */}
-                        <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
-                            <ambientLight intensity={0.5} />
-                            <directionalLight position={[10, 10, 5]} intensity={1} />
-                            <pointLight position={[-10, -10, -5]} intensity={0.5} />
-                            <Monster3D color={selectedMonster.color} type={selectedMonster.type} />
-                            <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={2} />
+    return (
+        <div className="h-full flex flex-col p-4 gap-4">
+            {/* Header */}
+            <div className="flex items-center gap-4">
+                <button
+                    onClick={() => navigate('/')}
+                    className="w-12 h-12 bg-white rounded-xl border-4 border-slate-200 shadow-[4px_4px_0px_rgba(0,0,0,0.1)] flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+                >
+                    <ArrowLeft size={24} className="text-slate-700" strokeWidth={3} />
+                </button>
+                <h1 className="text-3xl font-black text-slate-800 tracking-tight uppercase">{monster.name}</h1>
+                <div className="px-3 py-1 bg-slate-200 rounded-lg font-mono font-bold text-slate-600">
+                    #{monster.id}
+                </div>
+            </div>
+
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-hidden">
+                {/* Left: 3D Viewer */}
+                <div className="relative bg-gradient-to-b from-sky-100 to-white rounded-3xl border-4 border-white shadow-inner overflow-hidden flex flex-col">
+                    <div className="absolute top-4 left-4 z-10 px-4 py-2 bg-white/80 backdrop-blur rounded-full font-black text-slate-700 shadow-sm border-2 border-white">
+                        TYPE: {monster.type.toUpperCase()}
+                    </div>
+
+                    <div className="flex-1 relative">
+                        <Canvas camera={{ position: [0, 1, 4], fov: 45 }}>
+                            <ambientLight intensity={0.7} />
+                            <directionalLight position={[5, 5, 5]} intensity={1} />
+                            <MonsterMini3D
+                                color={monster.color}
+                                type={monster.type}
+                                scale={1.5}
+                            />
+                            <OrbitControls enableZoom={false} autoRotate={isPlaying} autoRotateSpeed={4} />
                             <Environment preset="city" />
                         </Canvas>
-
-                        {/* Type indicator */}
-                        <div
-                            className="absolute top-4 right-4 px-4 py-2 rounded-full text-sm font-black uppercase text-white shadow-lg"
-                            style={{ backgroundColor: selectedMonster.color, boxShadow: `0 0 20px ${selectedMonster.color}` }}
-                        >
-                            {selectedMonster.type}
-                        </div>
                     </div>
                 </div>
 
-                {/* Right: Stats Panel */}
-                <div className="space-y-6">
-                    {/* Header */}
-                    <div className="glass-dark rounded-2xl p-6 border border-white/20">
-                        <h1 className="text-4xl md:text-5xl font-black text-white mb-2 animate-neon-pulse">
-                            {selectedMonster.name}
-                        </h1>
-                        <p className="text-white/70 text-lg font-semibold">Level 50 • Sound Monster</p>
+                {/* Right: Stats & Actions */}
+                <div className="flex flex-col gap-6 overflow-y-auto pr-2">
+                    {/* Description Card */}
+                    <div className="bg-white p-5 rounded-3xl border-4 border-slate-100 shadow-sm">
+                        <p className="text-slate-600 font-bold leading-relaxed">
+                            A rare {monster.type} type monster found in the digital wild.
+                            Known for its unique sound signature and rhythmic capabilities.
+                        </p>
                     </div>
 
-                    {/* Stats Radar Chart */}
-                    <div className="glass-dark rounded-2xl p-6 border border-white/20">
-                        <h2 className="text-2xl font-black text-white mb-4">Base Stats</h2>
-
-                        <ResponsiveContainer width="100%" height={300}>
-                            <RadarChart data={statsData}>
-                                <PolarGrid stroke="#ffffff40" />
-                                <PolarAngleAxis
-                                    dataKey="stat"
-                                    tick={{ fill: '#fff', fontWeight: 'bold', fontSize: 12 }}
-                                />
-                                <Radar
-                                    name={selectedMonster.name}
-                                    dataKey="value"
-                                    stroke={selectedMonster.color}
-                                    fill={selectedMonster.color}
-                                    fillOpacity={0.6}
-                                    strokeWidth={3}
-                                />
-                            </RadarChart>
-                        </ResponsiveContainer>
-
-                        {/* Stats List */}
-                        <div className="mt-6 grid grid-cols-2 gap-3">
-                            {statsData.map((stat) => (
-                                <div key={stat.stat} className="flex items-center justify-between p-3 bg-white/10 rounded-lg backdrop-blur">
-                                    <span className="font-bold text-white/90">{stat.stat}</span>
-                                    <span className="font-black text-xl" style={{ color: selectedMonster.color }}>
-                                        {stat.value}
-                                    </span>
+                    {/* Stats Bars */}
+                    <div className="bg-white p-6 rounded-3xl border-4 border-slate-100 shadow-sm space-y-4">
+                        <h3 className="font-black text-slate-400 uppercase text-sm tracking-wider mb-2">Battle Stats</h3>
+                        {stats.map(stat => (
+                            <div key={stat.label} className="space-y-1">
+                                <div className="flex justify-between text-xs font-black text-slate-500 uppercase">
+                                    <div className="flex items-center gap-1">
+                                        <stat.icon size={12} />
+                                        {stat.label}
+                                    </div>
+                                    <span>{stat.value}</span>
                                 </div>
-                            ))}
-                        </div>
+                                <div className="h-4 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                                    <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${(stat.value / stat.max) * 100}%` }}
+                                        transition={{ duration: 1, ease: "easeOut" }}
+                                        className={`h-full ${stat.color}`}
+                                    />
+                                </div>
+                            </div>
+                        ))}
                     </div>
 
-                    {/* Play Sound Button */}
-                    <button
+                    {/* Action Button */}
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={handlePlaySound}
-                        disabled={isPlaying}
                         className={`
-              w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 
-              text-white font-black py-4 px-6 rounded-xl flex items-center justify-center gap-3 
-              transition-all shadow-lg hover:shadow-xl diagonal-cut-tl glow-red
-              ${isPlaying ? 'animate-pulse-glow' : ''}
-            `}
+                            w-full py-4 rounded-2xl font-black text-xl text-white shadow-[0_4px_0_rgba(0,0,0,0.2)]
+                            flex items-center justify-center gap-3 transition-colors
+                            ${isPlaying ? 'bg-green-500' : 'bg-blue-500 hover:bg-blue-400'}
+                        `}
                     >
                         {isPlaying ? (
                             <>
-                                <Volume2 className="w-6 h-6 animate-pulse" fill="currentColor" />
-                                Playing Sound...
+                                <Volume2 className="w-8 h-8 animate-pulse" strokeWidth={3} />
+                                PLAYING...
                             </>
                         ) : (
                             <>
-                                <Play className="w-6 h-6" fill="currentColor" />
-                                Play Sound Sample
+                                <Play className="w-8 h-8" fill="currentColor" />
+                                PLAY CRY
                             </>
                         )}
-                    </button>
+                    </motion.button>
                 </div>
             </div>
         </div>
