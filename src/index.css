@@ -1,21 +1,33 @@
 @import "tailwindcss";
 
-/* ===== ROOT VARIABLES (Enhanced Game Style) ===== */
+/* ===== ROOT VARIABLES (ToyOS Theme) ===== */
 :root {
-    --color-primary: #DC2626;
-    --color-secondary: #1F2937;
-    --color-accent: #FBBF24;
-    --color-bg: #FFFFFF;
-    --color-surface: #F3F4F6;
-    --color-text: #111827;
-    --color-text-muted: #6B7280;
-    --radius-lg: 1rem;
-    --radius-xl: 1.5rem;
+    /* Toy Colors */
+    --color-primary: #3B82F6;
+    /* Sky Blue */
+    --color-secondary: #84CC16;
+    /* Lime Green */
+    --color-accent: #EC4899;
+    /* Hot Pink */
+    --color-warning: #FACC15;
+    /* Sunshine Yellow */
+    --color-purple: #8B5CF6;
+    /* Violet */
 
-    /* Game effects */
-    --glow-primary: 0 0 20px rgba(220, 38, 38, 0.5);
-    --glow-secondary: 0 0 30px rgba(251, 191, 36, 0.6);
-    --shadow-elevated: 0 20px 40px rgba(0, 0, 0, 0.15);
+    --color-bg: #F0F9FF;
+    /* Very Light Blue */
+    --color-surface: #FFFFFF;
+    --color-text: #1E293B;
+    /* Slate 800 */
+    --color-text-light: #64748B;
+    /* Slate 500 */
+
+    --radius-lg: 1.5rem;
+    --radius-xl: 2.5rem;
+
+    --shadow-pop: 0 8px 0 rgba(0, 0, 0, 0.15);
+    --shadow-pop-hover: 0 12px 0 rgba(0, 0, 0, 0.15);
+    --shadow-pop-active: 0 0 0 rgba(0, 0, 0, 0.15);
 }
 
 /* ===== BASE STYLES ===== */
@@ -26,193 +38,110 @@
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Outfit', 'Fredoka', 'Inter', sans-serif;
+    /* Rounder fonts preferred */
+    background: #ffffff;
     color: var(--color-text);
     overflow-x: hidden;
     min-height: 100vh;
 }
 
-/* ===== CUSTOM ANIMATIONS ===== */
-@keyframes pulse-scale {
+/* ===== TOY COMPONENTS ===== */
+
+/* Squishy 3D Buttons */
+.btn-toy {
+    transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(0);
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2);
+}
+
+.btn-toy:active {
+    transform: translateY(6px);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0.2);
+}
+
+.btn-toy-primary {
+    background-color: var(--color-primary);
+    color: white;
+    border-bottom: 4px solid #1D4ED8;
+    /* Darker Blue */
+}
+
+.btn-toy-secondary {
+    background-color: var(--color-secondary);
+    color: white;
+    border-bottom: 4px solid #4D7C0F;
+    /* Darker Green */
+}
+
+.btn-toy-accent {
+    background-color: var(--color-accent);
+    color: white;
+    border-bottom: 4px solid #BE185D;
+    /* Darker Pink */
+}
+
+/* Pop Cards */
+.card-toy {
+    background: white;
+    border-radius: var(--radius-lg);
+    border: 4px solid #E2E8F0;
+    box-shadow: 0 8px 0 #CBD5E1;
+    transition: transform 0.2s ease;
+}
+
+.card-toy:hover {
+    transform: translateY(-4px);
+}
+
+/* Fun Inputs */
+.input-toy {
+    border: 4px solid #E2E8F0;
+    border-radius: 1rem;
+    padding: 0.75rem 1rem;
+    font-weight: bold;
+    color: var(--color-text);
+    transition: border-color 0.2s;
+}
+
+.input-toy:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes bounce-slow {
 
     0%,
     100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-
-    50% {
-        transform: scale(1.05);
-        opacity: 0.8;
-    }
-}
-
-@keyframes pulse-glow {
-
-    0%,
-    100% {
-        box-shadow: 0 0 20px rgba(220, 38, 38, 0.5), 0 0 40px rgba(220, 38, 38, 0.3);
-    }
-
-    50% {
-        box-shadow: 0 0 40px rgba(220, 38, 38, 0.8), 0 0 60px rgba(220, 38, 38, 0.5);
-    }
-}
-
-@keyframes waveform {
-
-    0%,
-    100% {
-        transform: scaleY(0.5);
-    }
-
-    25% {
-        transform: scaleY(1);
-    }
-
-    50% {
-        transform: scaleY(0.7);
-    }
-
-    75% {
-        transform: scaleY(0.9);
-    }
-}
-
-@keyframes float {
-
-    0%,
-    100% {
-        transform: translateY(0px);
-    }
-
-    50% {
-        transform: translateY(-20px);
-    }
-}
-
-@keyframes shimmer {
-    0% {
-        background-position: -1000px 0;
-    }
-
-    100% {
-        background-position: 1000px 0;
-    }
-}
-
-@keyframes spin-slow {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-@keyframes shake {
-
-    0%,
-    100% {
-        transform: translateX(0);
-    }
-
-    10%,
-    30%,
-    50%,
-    70%,
-    90% {
-        transform: translateX(-10px);
-    }
-
-    20%,
-    40%,
-    60%,
-    80% {
-        transform: translateX(10px);
-    }
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
         transform: translateY(0);
     }
-}
 
-@keyframes particles {
-    0% {
-        transform: translateY(0) scale(1);
-        opacity: 1;
-    }
-
-    100% {
-        transform: translateY(-100px) scale(0.5);
-        opacity: 0;
+    50% {
+        transform: translateY(-10px);
     }
 }
 
-@keyframes card-flip {
-    0% {
-        transform: rotateY(0deg);
-    }
-
-    100% {
-        transform: rotateY(360deg);
-    }
-}
-
-@keyframes neon-pulse {
+@keyframes wiggle {
 
     0%,
     100% {
-        text-shadow:
-            0 0 10px rgba(220, 38, 38, 0.8),
-            0 0 20px rgba(220, 38, 38, 0.6),
-            0 0 30px rgba(220, 38, 38, 0.4);
+        transform: rotate(-3deg);
     }
 
     50% {
-        text-shadow:
-            0 0 20px rgba(220, 38, 38, 1),
-            0 0 40px rgba(220, 38, 38, 0.8),
-            0 0 60px rgba(220, 38, 38, 0.6);
+        transform: rotate(3deg);
     }
 }
 
-@keyframes gradient-shift {
+@keyframes pop-in {
     0% {
-        background-position: 0% 50%;
-    }
-
-    50% {
-        background-position: 100% 50%;
-    }
-
-    100% {
-        background-position: 0% 50%;
-    }
-}
-
-@keyframes bounce-in {
-    0% {
-        transform: scale(0.3);
+        transform: scale(0.5);
         opacity: 0;
-    }
-
-    50% {
-        transform: scale(1.05);
     }
 
     70% {
-        transform: scale(0.9);
+        transform: scale(1.1);
     }
 
     100% {
@@ -221,198 +150,28 @@ body {
     }
 }
 
-@keyframes scan-line {
-    0% {
-        top: 0%;
-    }
-
-    100% {
-        top: 100%;
-    }
+.animate-bounce-slow {
+    animation: bounce-slow 3s ease-in-out infinite;
 }
 
-/* ===== UTILITY CLASSES ===== */
-.animate-pulse-scale {
-    animation: pulse-scale 2s ease-in-out infinite;
+.animate-wiggle {
+    animation: wiggle 2s ease-in-out infinite;
 }
 
-.animate-pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite;
+.animate-pop-in {
+    animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
-.animate-waveform {
-    animation: waveform 0.8s ease-in-out infinite;
+/* ===== UTILITIES ===== */
+.text-shadow-sm {
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
 }
 
-.animate-float {
-    animation: float 3s ease-in-out infinite;
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
 }
 
-.animate-shimmer {
-    animation: shimmer 2s linear infinite;
-    background: linear-gradient(90deg,
-            rgba(255, 255, 255, 0) 0%,
-            rgba(255, 255, 255, 0.3) 50%,
-            rgba(255, 255, 255, 0) 100%);
-    background-size: 1000px 100%;
-}
-
-.animate-spin-slow {
-    animation: spin-slow 3s linear infinite;
-}
-
-.animate-shake {
-    animation: shake 0.5s ease-in-out;
-}
-
-.animate-slide-up {
-    animation: slideUp 0.3s ease-out;
-}
-
-.animate-particles {
-    animation: particles 2s ease-out infinite;
-}
-
-.animate-neon-pulse {
-    animation: neon-pulse 2s ease-in-out infinite;
-}
-
-.animate-gradient-shift {
-    animation: gradient-shift 3s ease infinite;
-    background-size: 200% 200%;
-}
-
-.animate-bounce-in {
-    animation: bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-/* ===== DIAGONAL CUTS (Pokémon Style) ===== */
-.diagonal-cut-br {
-    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
-}
-
-.diagonal-cut-tl {
-    clip-path: polygon(20px 0, 100% 0, 100% 100%, 0 100%, 0 20px);
-}
-
-/* ===== HEXAGON UTILITIES ===== */
-.hexagon {
-    clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
-}
-
-/* ===== GLOW EFFECTS ===== */
-.glow-red {
-    box-shadow: 0 0 20px rgba(220, 38, 38, 0.5), 0 0 40px rgba(220, 38, 38, 0.3);
-}
-
-.glow-yellow {
-    box-shadow: 0 0 20px rgba(251, 191, 36, 0.6), 0 0 40px rgba(251, 191, 36, 0.4);
-}
-
-.glow-blue {
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.4);
-}
-
-.glow-green {
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.6), 0 0 40px rgba(16, 185, 129, 0.4);
-}
-
-/* ===== CUSTOM SCROLLBAR ===== */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: rgba(243, 244, 246, 0.2);
-}
-
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #DC2626, #991B1B);
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, #EF4444, #B91C1C);
-}
-
-/* ===== POKÉMON-STYLE CARD SHINE ===== */
-.card-shine {
-    position: relative;
-    overflow: hidden;
-}
-
-.card-shine::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg,
-            transparent,
-            rgba(255, 255, 255, 0.5),
-            transparent);
-    transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.card-shine:hover::before {
-    left: 100%;
-}
-
-/* ===== GLASS MORPHISM EFFECT ===== */
-.glass {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.glass-dark {
-    background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* ===== PARTICLE CONTAINER ===== */
-.particle {
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    background: radial-gradient(circle, #FBBF24, transparent);
-    border-radius: 50%;
-    pointer-events: none;
-}
-
-/* ===== SCAN LINE EFFECT ===== */
-.scan-line {
-    position: absolute;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(to right, transparent, #DC2626, transparent);
-    animation: scan-line 2s linear infinite;
-    box-shadow: 0 0 10px #DC2626;
-}
-
-/* ===== 3D TRANSFORMS ===== */
-.transform-3d {
-    transform-style: preserve-3d;
-    perspective: 1000px;
-}
-
-/* ===== GRADIENT BORDERS ===== */
-.gradient-border {
-    position: relative;
-    background: linear-gradient(white, white) padding-box,
-        linear-gradient(135deg, #DC2626, #FBBF24) border-box;
-    border: 4px solid transparent;
-}
-
-/* ===== HOLOGRAPHIC EFFECT ===== */
-.holographic {
-    background: linear-gradient(135deg,
-            rgba(255, 0, 255, 0.1),
-            rgba(0, 255, 255, 0.1),
-            rgba(255, 255, 0, 0.1));
-    background-size: 200% 200%;
-    animation: gradient-shift 3s ease infinite;
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }

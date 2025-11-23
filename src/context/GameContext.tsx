@@ -7,7 +7,7 @@ interface GameContextType {
     allMonsters: Monster[];
     selectedMonster: Monster | null;
     stageSlots: StageSlot[];
-    unlockMonster: (id: string) => void;
+    unlockMonster: (id: string, recordedAudio?: string) => void;
     scanForSound: () => Promise<Monster | null>;
     selectMonster: (id: string) => void;
     addToStage: (monsterId: string, slotIndex: number) => void;
@@ -26,9 +26,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         Array(5).fill(null).map(() => ({ monster: null, isMuted: false }))
     );
 
-    const unlockMonster = useCallback((id: string) => {
+    const unlockMonster = useCallback((id: string, recordedAudio?: string) => {
         setAllMonsters(prev =>
-            prev.map(m => m.id === id ? { ...m, isUnlocked: true } : m)
+            prev.map(m => m.id === id ? { ...m, isUnlocked: true, ...(recordedAudio && { recordedAudio }) } : m)
         );
     }, []);
 
