@@ -2,36 +2,26 @@ import { useEffect, useRef } from 'react';
 
 interface OscilloscopeProps {
     analyser: AnalyserNode | null;
-    isActive: boolean;
+    isActive?: boolean;
     color?: string;
 }
 
-export default function Oscilloscope({ analyser, isActive, color = '#3B82F6' }: OscilloscopeProps) {
+export default function Oscilloscope({ analyser, isActive = false, color = '#3B82F6' }: OscilloscopeProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const animationRef = useRef<number>();
 
     useEffect(() => {
         const canvas = canvasRef.current;
-        if (!canvas || !analyser || !isActive) {
-            if (animationRef.current) {
-                cancelAnimationFrame(animationRef.current);
-            }
-            return;
-        }
+        if (!canvas) return;
 
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        const bufferLength = analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
+        const width = canvas.width;
+        const height = canvas.height;
 
         const draw = () => {
             animationRef.current = requestAnimationFrame(draw);
-
-            analyser.getByteTimeDomainData(dataArray);
-
-            const width = canvas.width;
-            const height = canvas.height;
 
             // Clear canvas
             ctx.fillStyle = '#1a1a1a';
@@ -59,20 +49,42 @@ export default function Oscilloscope({ analyser, isActive, color = '#3B82F6' }: 
             ctx.shadowColor = color;
             ctx.beginPath();
 
-            const sliceWidth = width / bufferLength;
-            let x = 0;
+            if (analyser && isActive) {
+                // Real audio data
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                analyser.getByteTimeDomainData(dataArray);
 
-            for (let i = 0; i < bufferLength; i++) {
-                const v = dataArray[i] / 128.0;
-                const y = (v * height) / 2;
+                const sliceWidth = width / bufferLength;
+                let x = 0;
 
-                if (i === 0) {
-                    ctx.moveTo(x, y);
-                } else {
-                    ctx.lineTo(x, y);
+                for (let i = 0; i < bufferLength; i++) {
+                    const v = dataArray[i] / 128.0;
+                    const y = (v * height) / 2;
+
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+
+                    x += sliceWidth;
                 }
+            } else {
+                // Animated sine wave when no audio
+                const time = Date.now() / 1000;
+                const amplitude = 20;
+                const frequency = 2;
 
-                x += sliceWidth;
+                for (let x = 0; x < width; x++) {
+                    const y = height / 2 + Math.sin((x / width) * Math.PI * frequency + time * 2) * amplitude;
+
+                    if (x === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
             }
 
             ctx.stroke();
@@ -89,14 +101,14 @@ export default function Oscilloscope({ analyser, isActive, color = '#3B82F6' }: 
     }, [analyser, isActive, color]);
 
     return (
-        <div className="bg-black rounded-2xl border-4 border-slate-700 p-3 relative overflow-hidden shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+        <div className="bg-black rounded-2xl border-4 border-slate-700 p-3 relative shadow-[0_0_20px_rgba(59,130,246,0.3)]">
             <div className="absolute top-2 left-3 text-xs font-mono font-black text-slate-400 tracking-wider">
                 OSCILLOSCOPE
             </div>
             <canvas
                 ref={canvasRef}
                 width={600}
-                height={120}
+                height={600}
                 className="w-full h-full"
             />
         </div>
