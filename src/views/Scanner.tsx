@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useGame } from '../context/GameContext';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Radio, Waves, Sparkles, X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Radio, Sparkles } from 'lucide-react';
 import Modal from '../components/Modal';
 import MonsterMini3D from '../components/MonsterMini3D';
 import { Canvas } from '@react-three/fiber';
@@ -14,8 +14,6 @@ export default function Scanner() {
     const [scanState, setScanState] = useState<ScanState>('idle');
     const [foundMonster, setFoundMonster] = useState<any>(null);
     const [showModal, setShowModal] = useState(false);
-    const [recordedAudioData, setRecordedAudioData] = useState<string | null>(null);
-    const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
 
     const handleScan = async () => {
         if (scanState !== 'idle') return;
@@ -41,7 +39,6 @@ export default function Scanner() {
                 const reader = new FileReader();
                 reader.onloadend = () => {
                     const base64Audio = reader.result as string;
-                    setRecordedAudioData(base64Audio);
 
                     // Process and find monster
                     setScanState('processing');
@@ -69,7 +66,6 @@ export default function Scanner() {
                 reader.readAsDataURL(audioBlob);
             };
 
-            setMediaRecorder(recorder);
             recorder.start();
 
             // Record for 2.5 seconds
@@ -153,8 +149,9 @@ export default function Scanner() {
                     <div className="text-center">
                         <p className={`text-2xl font-black uppercase tracking-wider ${scanState === 'idle' ? 'text-white' : 'text-slate-400'}`}>
                             {scanState === 'idle' && 'TAP TO SCAN'}
-                            {scanState === 'listening' && 'LISTENING...'}
-                            {scanState === 'analyzing' && 'ANALYZING...'}
+                            {scanState === 'requesting-mic' && 'REQUESTING MIC...'}
+                            {scanState === 'recording' && 'RECORDING...'}
+                            {scanState === 'processing' && 'PROCESSING...'}
                             {scanState === 'found' && 'MATCH FOUND!'}
                         </p>
                     </div>

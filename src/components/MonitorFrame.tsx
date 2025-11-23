@@ -53,7 +53,7 @@ export default function MonitorFrame({ children }: MonitorFrameProps) {
 
                         {/* Sliders Area */}
                         <div className="flex-1 bg-orange-300/50 rounded-2xl p-4 flex justify-between items-center shadow-inner">
-                            {['BEAT', 'BASS', 'MELODY', 'FX'].map((label, i) => (
+                            {['BEAT', 'BASS', 'MELODY', 'FX'].map((label) => (
                                 <div key={label} className="flex flex-col items-center gap-2 h-full">
                                     <div className="flex-1 w-4 bg-gray-800 rounded-full relative shadow-inner">
                                         <motion.div

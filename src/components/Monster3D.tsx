@@ -10,7 +10,7 @@ interface Monster3DProps {
     isPlaying?: boolean;
 }
 
-export default function Monster3D({ color, type, scale = 1, isPlaying = false }: Monster3DProps) {
+export default function Monster3D({ color, type }: Monster3DProps) {
     const meshRef = useRef<Mesh>(null);
 
     useFrame((state) => {

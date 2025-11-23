@@ -8,7 +8,7 @@ interface OscilloscopeProps {
 
 export default function Oscilloscope({ analyser, isActive = false, color = '#3B82F6' }: OscilloscopeProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const animationRef = useRef<number>();
+    const animationRef = useRef<number | undefined>(undefined);
 
     useEffect(() => {
         const canvas = canvasRef.current;
