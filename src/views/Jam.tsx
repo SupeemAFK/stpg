@@ -56,6 +56,37 @@ export default function Jam() {
             ...prev,
             [id]: { ...prev[id], [key]: value }
         }));
+
+        // If currently playing, restart the sound with new settings
+        if (isPlaying && activeMonsters.has(id)) {
+            const monster = unlockedMonsters.find(m => m.id === id);
+            if (monster) {
+                // Stop current sound
+                stopAllSounds();
+
+                // Restart all active monsters with updated settings
+                setTimeout(() => {
+                    activeMonsters.forEach(monsterId => {
+                        const m = unlockedMonsters.find(mon => mon.id === monsterId);
+                        if (m) {
+                            const settings = monsterId === id
+                                ? { ...monsterSettings[id], [key]: value }
+                                : (monsterSettings[monsterId] || {});
+
+                            playMonsterSound(m, {
+                                waveform: settings.waveform || 'sine',
+                                pitchShift: settings.pitchShift || 0,
+                                speed: settings.speed || 1,
+                                hasCrackle: settings.hasCrackle || false,
+                                loop: settings.loop !== false,
+                                delay: settings.delay || 0,
+                                filterFreq: settings.filterFreq || 20000
+                            });
+                        }
+                    });
+                }, 50);
+            }
+        }
     };
 
     // Play/stop all active monster sounds
@@ -80,7 +111,7 @@ export default function Jam() {
         } else {
             stopAllSounds();
         }
-    }, [isPlaying, activeMonsters, monsterSettings, playMonsterSound, stopAllSounds, unlockedMonsters]);
+    }, [isPlaying, activeMonsters]);
 
     const handlePlayToggle = () => {
         setIsPlaying(!isPlaying);
